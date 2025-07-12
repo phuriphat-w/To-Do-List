@@ -6,11 +6,43 @@ const todoStore = useTodoStore()
 const todoText = ref('')
 
 onMounted(async () => {
-  await todoStore.loadTodos()
+  try {
+    await todoStore.loadTodos()
+  } catch (error) {
+    console.log('Failed to load data')
+  }
 })
 
 const addTodo = async (todoText) => {
-  await todoStore.addTodo(todoText)
+  try {
+    await todoStore.addTodo(todoText)
+  } catch (error) {
+    console.log('Failed to add data')
+  }
+}
+
+const deleteTodo = async (todoId) => {
+  try {
+    await todoStore.removeTodo(todoId)
+    await todoStore.loadTodos()
+  } catch (error) {
+    console.log('Failed to remove data')
+  }
+}
+
+const editStatus = async (todoId, todoData) => {
+  try {
+    const updateData = {
+      name: todoData.name,
+      status: todoData.status,
+    }
+    console.log('Sending name = ', updateData.name)
+    console.log('Sending status = ', updateData.status)
+
+    await todoStore.editTodo(updateData, todoId)
+  } catch (error) {
+    console.log('Failed to edit status')
+  }
 }
 </script>
 <template>
@@ -21,9 +53,15 @@ const addTodo = async (todoText) => {
     </div>
     <ul>
       <li v-for="todo in todoStore.list">
-        {{ todo.name }} {{ todo.status }}
+        {{ todo.name }}
+        <select v-model="todo.status" @change="editStatus(todo.id, todo)">
+          <option>Select status</option>
+          <option v-for="status in todoStore.status" :value="status">
+            {{ status }}
+          </option>
+        </select>
         <button>Edit</button>
-        <button>Delete</button>
+        <button @click="deleteTodo(todo.id)">Delete</button>
       </li>
     </ul>
   </div>
