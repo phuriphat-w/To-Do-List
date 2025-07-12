@@ -33,6 +33,7 @@ export const useTodoStore = defineStore('todo', {
       }
       try {
         const response = await axios.post(`${BASE_URL}/todos/`, bodyData)
+        this.list.push(response.data)
         console.log('Added ', response.data)
       } catch (error) {
         console.log('Error', error)
