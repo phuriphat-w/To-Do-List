@@ -1,13 +1,17 @@
 <script setup>
 import { useTodoStore } from '../stores/todo'
 import { ref, onMounted } from 'vue'
+import { RouterLink } from 'vue-router'
 
 const todoStore = useTodoStore()
 const todoText = ref('')
+const isLoading = ref(false)
 
 onMounted(async () => {
   try {
+    isLoading.value = true
     await todoStore.loadTodos()
+    isLoading.value = false
   } catch (error) {
     console.log('Failed to load data')
   }
@@ -15,7 +19,9 @@ onMounted(async () => {
 
 const addTodo = async (todoText) => {
   try {
+    isLoading.value = true
     await todoStore.addTodo(todoText)
+    isLoading.value = false
   } catch (error) {
     console.log('Failed to add data')
   }
@@ -23,8 +29,10 @@ const addTodo = async (todoText) => {
 
 const deleteTodo = async (todoId) => {
   try {
+    isLoading.value = true
     await todoStore.removeTodo(todoId)
     await todoStore.loadTodos()
+    isLoading.value = false
   } catch (error) {
     console.log('Failed to remove data')
   }
@@ -32,6 +40,7 @@ const deleteTodo = async (todoId) => {
 
 const editStatus = async (todoId, todoData) => {
   try {
+    isLoading.value = true
     const updateData = {
       name: todoData.name,
       status: todoData.status,
@@ -40,6 +49,7 @@ const editStatus = async (todoId, todoData) => {
     console.log('Sending status = ', updateData.status)
 
     await todoStore.editTodo(updateData, todoId)
+    isLoading.value = false
   } catch (error) {
     console.log('Failed to edit status')
   }
@@ -60,9 +70,14 @@ const editStatus = async (todoId, todoData) => {
             {{ status }}
           </option>
         </select>
-        <button>Edit</button>
+        <RouterLink :to="{ name: 'todo-edit', params: { id: todo.id } }">
+          <button>Edit</button>
+        </RouterLink>
         <button @click="deleteTodo(todo.id)">Delete</button>
       </li>
     </ul>
+    <div v-if="isLoading">
+      <h2>Loading</h2>
+    </div>
   </div>
 </template>
